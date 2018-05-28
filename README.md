@@ -1,0 +1,1 @@
+This offers a Kotlin wrapper for the TCGPlayer API, including an optional caching layer.
