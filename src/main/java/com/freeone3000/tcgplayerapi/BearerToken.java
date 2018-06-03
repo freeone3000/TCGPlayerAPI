@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable;
 import java.time.Instant;
 
 /**
- * Data class for encapsulating a TCGPlayer API token.
+ * Data class for encapsulating a TCGPlayer TCGPlayerAPI token.
  *
  * Future plans are to move this to pure Kotlin, but can be in Java for now
  * as this is not intended to be called from the client side.
@@ -22,7 +22,7 @@ public class BearerToken {
 	public String tokenType; //"bearer"
 
 	/**
-	 * Prefer use of timeIssued and timeExpires. Here for full API compatibility.
+	 * Prefer use of timeIssued and timeExpires. Here for full TCGPlayerAPI compatibility.
 	 * @deprecated Prefer use of timeIssued and timeExpires.
 	 * @see BearerToken#timeIssued
 	 * @see BearerToken#timeExpires
