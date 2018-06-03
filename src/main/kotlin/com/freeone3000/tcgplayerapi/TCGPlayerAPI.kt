@@ -1,10 +1,12 @@
 package com.freeone3000.tcgplayerapi
 
+import com.freeone3000.tcgplayerapi.auth.AuthenticationFailureException
 import com.freeone3000.tcgplayerapi.auth.TCGPlayerAuthenticationInfo
 import com.freeone3000.tcgplayerapi.data.CardPrice
 import com.freeone3000.tcgplayerapi.data.CardSku
 import com.freeone3000.tcgplayerapi.data.InternalMtgCard
 import com.freeone3000.tcgplayerapi.data.MtgCard
+import com.mashape.unirest.http.Unirest
 import java.time.Instant
 
 /**
@@ -21,15 +23,18 @@ typealias CategoryId = Int
 //for filtering searches
 typealias SearchFilter = Pair<String, String>
 
+//version of TCGPlayerAPI this is written against
+const val BASE_API = "https://api.tcgplayer.com/v1.9.1"
+
 /**
  * Creates a TCGPlayerAPI interface.
  * This interface will automatically request and renew BearerTokens as appropriate.
+ * See https://docs.tcgplayer.com/v1.9.1/reference
  *
  * @param authenticationInfo The authentication required to request a BearerToken
- * @see https://docs.tcgplayer.com/v1.9.1/reference
  */
 class TCGPlayer(private val authenticationInfo: TCGPlayerAuthenticationInfo) {
-    private var bearerToken: BearerToken;
+    private var bearerToken: BearerToken
 
     init {
         bearerToken = requestBearerToken(authenticationInfo)
@@ -65,12 +70,24 @@ class TCGPlayer(private val authenticationInfo: TCGPlayerAuthenticationInfo) {
      * @param card The card to search for
      * @return A mapping from a human-readable name to the CardPrice
      */
-    public fun getCardPricesForName(card: MtgCard): List<Pair<String, CardPrice>> {
+    fun getCardPricesForName(card: MtgCard): List<Pair<String, CardPrice>> {
         validateBearerToken()
         TODO("Implement")
     }
 }
 
 private fun requestBearerToken(authenticationInfo: TCGPlayerAuthenticationInfo): BearerToken {
-    TODO("Implement")
+    val resp = Unirest.post("$BASE_API/token")
+            .header("X-Tcg-Access-Token", authenticationInfo.accessToken)
+            .field("grant_type", "client_credentials")
+            .field("client_id", authenticationInfo.publicKey)
+            .field("client_secret", authenticationInfo.privateKey)
+            .asObject(BearerToken::class.java) ?: throw AuthenticationFailureException("Mapped to null response")
+
+    if(resp.status != 200) {
+        val responseText = resp.rawBody.bufferedReader().readText()
+        throw AuthenticationFailureException("Status code: ${resp.status}\nReason: $responseText")
+    }
+
+    return resp.body ?: throw AuthenticationFailureException("Null body on response")
 }

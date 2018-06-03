@@ -49,6 +49,13 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/com.mashape.unirest/unirest-java -->
+		<dependency>
+			<groupId>com.mashape.unirest</groupId>
+			<artifactId>unirest-java</artifactId>
+			<version>1.4.9</version>
+		</dependency>
+
 		<!-- jackson -->
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
@@ -76,6 +83,8 @@
 					<!-- java -->
 					<execution>
 						<id>compile</id>
+						<!-- keep it at compile so that KOTLIN can use JAVA, not the reverse! -->
+						<!--suppress KotlinMavenPluginPhase -->
 						<phase>compile</phase>
 						<goals>
 							<goal>compile</goal>
