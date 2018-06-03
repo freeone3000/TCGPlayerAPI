@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.freeone3000</groupId>
-	<artifactId>MTGPriceMatch</artifactId>
+	<artifactId>TCGPlayerAPI</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
