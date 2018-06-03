@@ -23,6 +23,13 @@
 	</properties>
 
 	<dependencies>
+		<!-- IDEA annotations -->
+		<dependency>
+			<groupId>com.intellij</groupId>
+			<artifactId>annotations</artifactId>
+			<version>12.0</version>
+		</dependency>
+
 		<!-- Kotlin -->
 		<dependency>
 			<groupId>org.jetbrains.kotlin</groupId>
@@ -81,23 +88,15 @@
 							<goal>test-compile</goal>
 						</goals>
 					</execution>
-
-					<!-- js (for client-side) -->
-					<execution>
-						<id>compile-js</id>
-						<phase>compile</phase>
-						<goals>
-							<goal>js</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>compile-js-test</id>
-						<phase>test-compile</phase>
-						<goals>
-							<goal>test-js</goal>
-						</goals>
-					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>8</source>
+					<target>8</target>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
