@@ -6,6 +6,7 @@ import com.freeone3000.tcgplayerapi.data.CardPrice
 import com.freeone3000.tcgplayerapi.data.CardSku
 import com.freeone3000.tcgplayerapi.data.InternalMtgCard
 import com.freeone3000.tcgplayerapi.data.MtgCard
+import com.freeone3000.tcgplayerapi.data.mapping.JacksonUnirestObjectMapper
 import com.mashape.unirest.http.Unirest
 import java.time.Instant
 
@@ -34,6 +35,13 @@ const val BASE_API = "https://api.tcgplayer.com/v1.9.1"
  * @param authenticationInfo The authentication required to request a BearerToken
  */
 class TCGPlayer(private val authenticationInfo: TCGPlayerAuthenticationInfo) {
+    companion object {
+        init {
+            //this needs to be run exactly once
+            Unirest.setObjectMapper(JacksonUnirestObjectMapper())
+        }
+    }
+
     private var bearerToken: BearerToken
 
     init {
@@ -74,20 +82,20 @@ class TCGPlayer(private val authenticationInfo: TCGPlayerAuthenticationInfo) {
         validateBearerToken()
         TODO("Implement")
     }
-}
 
-private fun requestBearerToken(authenticationInfo: TCGPlayerAuthenticationInfo): BearerToken {
-    val resp = Unirest.post("$BASE_API/token")
-            .header("X-Tcg-Access-Token", authenticationInfo.accessToken)
-            .field("grant_type", "client_credentials")
-            .field("client_id", authenticationInfo.publicKey)
-            .field("client_secret", authenticationInfo.privateKey)
-            .asObject(BearerToken::class.java) ?: throw AuthenticationFailureException("Mapped to null response")
+    fun requestBearerToken(authenticationInfo: TCGPlayerAuthenticationInfo): BearerToken {
+        val resp = Unirest.post("$BASE_API/token")
+                .header("X-Tcg-Access-Token", authenticationInfo.accessToken)
+                .field("grant_type", "client_credentials")
+                .field("client_id", authenticationInfo.publicKey)
+                .field("client_secret", authenticationInfo.privateKey)
+                .asObject(BearerToken::class.java) ?: throw AuthenticationFailureException("Mapped to null response")
 
-    if(resp.status != 200) {
-        val responseText = resp.rawBody.bufferedReader().readText()
-        throw AuthenticationFailureException("Status code: ${resp.status}\nReason: $responseText")
+        if(resp.status != 200) {
+            val responseText = resp.rawBody.bufferedReader().readText()
+            throw AuthenticationFailureException("Status code: ${resp.status}\nReason: $responseText")
+        }
+
+        return resp.body ?: throw AuthenticationFailureException("Null body on response")
     }
-
-    return resp.body ?: throw AuthenticationFailureException("Null body on response")
 }
