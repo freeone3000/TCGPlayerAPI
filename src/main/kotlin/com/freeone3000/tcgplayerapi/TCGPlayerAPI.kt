@@ -8,7 +8,7 @@ import com.freeone3000.tcgplayerapi.data.InternalMtgCard
 import com.freeone3000.tcgplayerapi.data.MtgCard
 import com.freeone3000.tcgplayerapi.data.mapping.JacksonUnirestObjectMapper
 import com.mashape.unirest.http.Unirest
-import java.time.Instant
+import java.time.ZonedDateTime
 
 /**
  * A ProductId is a general card, such as "Bayou".
@@ -50,7 +50,7 @@ class TCGPlayer(private val authenticationInfo: TCGPlayerAuthenticationInfo) {
 
     private fun validateBearerToken() {
         val expiryTime = bearerToken.timeExpires
-        if(expiryTime == null || expiryTime >= Instant.now()) {
+        if(expiryTime == null || expiryTime >= ZonedDateTime.now()) {
             bearerToken = requestBearerToken(authenticationInfo)
         }
     }

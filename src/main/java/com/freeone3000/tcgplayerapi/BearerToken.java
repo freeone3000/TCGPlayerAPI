@@ -1,9 +1,10 @@
 package com.freeone3000.tcgplayerapi;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jetbrains.annotations.Nullable;
 
-import java.time.Instant;
+import java.time.ZonedDateTime;
 
 /**
  * Data class for encapsulating a TCGPlayer TCGPlayerAPI token.
@@ -37,12 +38,14 @@ public class BearerToken {
 	public String userName; //"PUBLIC_KEY"
 
 	@JsonProperty(".issued")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "E, d MMM yyyy HH:mm:ss z")
 	@Nullable
-	public Instant timeIssued;
+	public ZonedDateTime timeIssued;
 
 	@JsonProperty(".expires")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "E, d MMM yyyy HH:mm:ss z")
 	@Nullable
-	public Instant timeExpires;
+	public ZonedDateTime timeExpires;
 
 	@SuppressWarnings("unused") //used in Jackson
 	public BearerToken() {
