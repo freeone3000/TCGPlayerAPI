@@ -50,10 +50,18 @@ class TCGPlayerAPIKtTest {
         }
     }
 
-    @Test
+    @Test(groups = ["debugging"], enabled = false)
     fun testDateTimeFormat() {
         val format = "E, d MMM yyyy HH:mm:ss z"
         val formatter= DateTimeFormatter.ofPattern(format)!!
         val date = ZonedDateTime.parse("Sat, 16 Jun 2018 20:03:40 GMT", formatter)
+    }
+
+    @Test(groups = ["debugging"], enabled = false)
+    fun testPrintCategories() {
+        val authInfo = authenticationInfo!!
+        val api = TCGPlayer(authInfo)
+
+        System.out.println(api.listCategories())
     }
 }

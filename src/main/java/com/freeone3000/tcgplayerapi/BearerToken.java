@@ -16,7 +16,7 @@ import java.time.ZonedDateTime;
 public class BearerToken {
 	@JsonProperty("access_token")
 	@Nullable
-	public String accessToken;
+	public String bearerToken;
 
 	@JsonProperty("token_type")
 	@Nullable
@@ -49,5 +49,9 @@ public class BearerToken {
 
 	@SuppressWarnings("unused") //used in Jackson
 	public BearerToken() {
+	}
+
+	public String header() {
+		return "Bearer " + bearerToken;
 	}
 }

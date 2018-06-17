@@ -8,6 +8,7 @@ import com.freeone3000.tcgplayerapi.data.InternalMtgCard
 import com.freeone3000.tcgplayerapi.data.MtgCard
 import com.freeone3000.tcgplayerapi.data.mapping.JacksonUnirestObjectMapper
 import com.mashape.unirest.http.Unirest
+import org.json.JSONObject
 import java.time.ZonedDateTime
 
 /**
@@ -26,6 +27,9 @@ typealias SearchFilter = Pair<String, String>
 
 //version of TCGPlayerAPI this is written against
 const val BASE_API = "https://api.tcgplayer.com/v1.9.1"
+
+//set by TCGPlayer
+const val MTG_CATEGORY_ID = 1;
 
 /**
  * Creates a TCGPlayerAPI interface.
@@ -81,6 +85,36 @@ class TCGPlayer(private val authenticationInfo: TCGPlayerAuthenticationInfo) {
     fun getCardPricesForName(card: MtgCard): List<Pair<String, CardPrice>> {
         validateBearerToken()
         TODO("Implement")
+    }
+
+    fun listCategories(): List<JSONObject> {
+        validateBearerToken()
+
+        val resultList = ArrayList<JSONObject>();
+
+        //stepwise combine all results (they paginate)
+        for(i in 0..Integer.MAX_VALUE step 10) {
+            val resp = Unirest.get("$BASE_API/catalog/categories?offset=$i&limit=10")
+                    .header("Authorization", bearerToken.header())
+                    .asJson()
+            val body = resp?.body?.`object` ?: throw RuntimeException("Could not read response")
+            if (resp.status != 200) {
+                throw RuntimeException("Request failed: $body");
+            }
+            if (!body.getBoolean("success")) {
+                throw RuntimeException("Request failed: $body");
+            }
+
+            val resultArray = body.getJSONArray("results")!!
+            for(resultIdx in 0..resultArray.length()-1) { //copies into output
+                resultList.add(resultArray.getJSONObject(resultIdx))
+            }
+
+            if(resultArray.length() < 10) { //last element returns
+                break
+            }
+        }
+        return resultList
     }
 
     fun requestBearerToken(authenticationInfo: TCGPlayerAuthenticationInfo): BearerToken {
