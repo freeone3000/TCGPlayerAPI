@@ -4,7 +4,6 @@ import com.freeone3000.tcgplayerapi.auth.AuthenticationFailureException
 import com.freeone3000.tcgplayerapi.auth.TCGPlayerAuthenticationInfo
 import com.freeone3000.tcgplayerapi.data.CardPrice
 import com.freeone3000.tcgplayerapi.data.CardSku
-import com.freeone3000.tcgplayerapi.data.InternalMtgCard
 import com.freeone3000.tcgplayerapi.data.MtgCard
 import com.freeone3000.tcgplayerapi.data.mapping.JacksonUnirestObjectMapper
 import com.freeone3000.tcgplayerapi.data.mapping.ProductInfo
@@ -61,14 +60,17 @@ class TCGPlayer(private val authenticationInfo: TCGPlayerAuthenticationInfo) {
         }
     }
 
-    private fun getMarketPriceBySku(sku: CardSku): List<CardPrice> {
+    private fun getMarketPriceBySku(sku: CardSku): CardPrice {
         validateBearerToken() //look into AOP? seems very rabbit-hole
-        TODO("Implement")
-    }
-
-    private fun listProductSkusById(id: ProductId): List<InternalMtgCard> {
-        validateBearerToken()
-        TODO("Implement")
+        val resp = Unirest.get("$BASE_API/pricing/marketprices/$sku")
+                .header("Authorization", bearerToken.header())
+                .asJson()
+        if(resp.status == 404) { // no such item found
+            return CardPrice(sku, Double.NaN, Double.NaN, Double.NaN)
+        } else {
+            val result = resp.body.`object`.getJSONArray("results").getJSONObject(0)
+            return CardPrice(sku, result.getDouble("price"), result.getDouble("lowestRange"), result.getDouble("highestRange"))
+        }
     }
 
     private fun getProductsForCardName(card: MtgCard): List<ProductInfo> {
@@ -108,11 +110,8 @@ class TCGPlayer(private val authenticationInfo: TCGPlayerAuthenticationInfo) {
 
         val results = ArrayList<Pair<String, CardPrice>>()
         for(product in getProductsForCardName(card)) {
-            for(internalCard in listProductSkusById(product.id)) {
-                for(cardPrice in getMarketPriceBySku(internalCard.productConditionId)) {
-                    results.add(Pair(internalCard.name, cardPrice)) //Needs more info?
-                }
-            }
+            val cardPrice = getMarketPriceBySku(product.id)
+            results.add(Pair(product.name, cardPrice)) //Needs more info?
         }
 
         return results
