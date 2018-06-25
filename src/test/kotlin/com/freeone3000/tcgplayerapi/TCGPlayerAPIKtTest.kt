@@ -39,6 +39,7 @@ class TCGPlayerAPIKtTest {
         val items = api.getCardPricesForName(testCard)
 
         items.forEach { item ->
+            System.out.println("Card: " + item.first + " Second: " + item.second);
             assert(!item.first.isBlank())
 
             val price = item.second

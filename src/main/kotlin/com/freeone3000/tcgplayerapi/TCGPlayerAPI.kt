@@ -7,8 +7,10 @@ import com.freeone3000.tcgplayerapi.data.CardSku
 import com.freeone3000.tcgplayerapi.data.InternalMtgCard
 import com.freeone3000.tcgplayerapi.data.MtgCard
 import com.freeone3000.tcgplayerapi.data.mapping.JacksonUnirestObjectMapper
+import com.freeone3000.tcgplayerapi.data.mapping.ProductInfo
 import com.mashape.unirest.http.Unirest
 import org.json.JSONObject
+import java.net.URLEncoder
 import java.time.ZonedDateTime
 
 /**
@@ -69,9 +71,28 @@ class TCGPlayer(private val authenticationInfo: TCGPlayerAuthenticationInfo) {
         TODO("Implement")
     }
 
-    private fun searchInCategory(categoryId: CategoryId, filers: List<SearchFilter>): List<ProductId> {
+    private fun getProductsForCardName(card: MtgCard): List<ProductInfo> {
         validateBearerToken()
-        TODO("Implement")
+        val mapper = JacksonUnirestObjectMapper()
+
+        val cardName = URLEncoder.encode(card.name, "UTF-8")
+        val resp = Unirest.get("$BASE_API/catalog/products?categoryId=${MTG_CATEGORY_ID}&productType=Cards&productName=${cardName}&getExtendedFields=true")
+                    .header("Authorization", bearerToken.header())
+                    .asJson()
+
+        val productInfo = ArrayList<ProductInfo>()
+        val results = resp.body.`object`.getJSONArray("results").getJSONObject(0)
+        val name = results.getString("productName")
+        val productId: ProductId = results.getLong("productId")
+
+        val conditionsArray = results.getJSONArray("productConditions")
+        for(i in 0 until conditionsArray.length()) {
+            val conditionJson = conditionsArray.getJSONObject(i)
+            val productCondition = mapper.readValue(conditionJson.toString(), ProductCondition::class.java)
+            productInfo.add(ProductInfo(name, productId, productCondition))
+        }
+
+        return productInfo
     }
 
     /**
@@ -84,7 +105,17 @@ class TCGPlayer(private val authenticationInfo: TCGPlayerAuthenticationInfo) {
      */
     fun getCardPricesForName(card: MtgCard): List<Pair<String, CardPrice>> {
         validateBearerToken()
-        TODO("Implement")
+
+        val results = ArrayList<Pair<String, CardPrice>>()
+        for(product in getProductsForCardName(card)) {
+            for(internalCard in listProductSkusById(product.id)) {
+                for(cardPrice in getMarketPriceBySku(internalCard.productConditionId)) {
+                    results.add(Pair(internalCard.name, cardPrice)) //Needs more info?
+                }
+            }
+        }
+
+        return results
     }
 
     fun listCategories(): List<JSONObject> {
